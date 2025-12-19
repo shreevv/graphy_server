@@ -1,0 +1,46 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: tax-calculator-pipeline
+spec:
+  params:
+    - name: repository
+      description: The git repository URL
+    - name: branch
+      description: The git branch
+    - name: image-server
+      description: The IBM Cloud Container Registry server (e.g., us.icr.io)
+    - name: image-namespace
+      description: Your IBM Cloud namespace
+    - name: app-name
+      description: Name of the application
+  tasks:
+    # Task to Clone code from GitHub
+    - name: clone-repo
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.repository)
+        - name: revision
+          value: $(params.branch)
+
+    # Task to Build and Push Docker Image (Task 3 & 5 logic)
+    - name: build-and-push
+      runAfter: [clone-repo]
+      taskRef:
+        name: buildah
+      params:
+        - name: IMAGE
+          value: $(params.image-server)/$(params.image-namespace)/$(params.app-name):latest
+
+    # Task to Deploy the application on IBM Cloud (Task 10 logic)
+    - name: deploy-to-cloud
+      runAfter: [build-and-push]
+      taskRef:
+        name: ibm-cloud-deploy
+      params:
+        - name: APP_NAME
+          value: $(params.app-name)
+        - name: IMAGE
+          value: $(params.image-server)/$(params.image-namespace)/$(params.app-name):latest

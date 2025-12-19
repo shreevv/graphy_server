@@ -3,5 +3,12 @@
     "express": "^4.18.1",
     "express-graphql": "^0.12.0",
     "graphql": "^15.8.0"
+  },
+  "scripts": {
+    "start": "node graphserver.js",
+    "test": "jasmine"
+  },
+  "devDependencies": {
+    "jasmine": "^5.13.0"
   }
 }
